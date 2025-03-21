@@ -191,8 +191,46 @@ if (isset($_GET['invoice_id'], $_GET['url_key']) && !isset($_GET['payment_intent
     if ($pi_obj->client_secret !== $pi_cs) {
         error_log("Stripe payment error - Payment intent ID/Secret mismatch for $pi_id");
         exit(WORDING_PAYMENT_FAILED);
-    } elseif ($pi_obj->status !== "succeeded") {
+    } elseif ($pi_obj->status !== "succeeded" && $pi_obj->status !== "processing") {
+        // Payment failed for a reason other than processing
         exit(WORDING_PAYMENT_FAILED);
+    } elseif ($pi_obj->status === "processing") {
+        // Handle ACH payments which may be in processing state
+        // Get invoice details for the message
+        $pi_invoice_id = intval($pi_obj->metadata->itflow_invoice_id);
+        $invoice_sql = mysqli_query(
+            $mysqli,
+            "SELECT invoice_prefix, invoice_number FROM invoices WHERE invoice_id = $pi_invoice_id LIMIT 1"
+        );
+        $row = mysqli_fetch_array($invoice_sql);
+        $invoice_prefix = sanitizeInput($row['invoice_prefix']);
+        $invoice_number = intval($row['invoice_number']);
+        
+        echo "<br><h2>Your payment for invoice {$invoice_prefix}{$invoice_number} is being processed.</h2>";
+        echo "<p>ACH payments typically take 3-5 business days to complete. We'll update your invoice once the payment has cleared.</p>";
+        echo "<p>You can close this window or <a href='guest_view_invoice.php?invoice_id={$pi_invoice_id}&url_key=" . sanitizeInput($_GET['url_key']) . "'>return to your invoice</a>.</p>";
+        
+        // Log the processing payment
+        $pi_client_id = intval($pi_obj->metadata->itflow_client_id);
+        $pi_amount_paid = floatval(($pi_obj->amount / 100));
+        $pi_currency = strtoupper(sanitizeInput($pi_obj->currency));
+        $pi_livemode = $pi_obj->livemode;
+        
+        $extended_log_desc = '';
+        if (!$pi_livemode) {
+            $extended_log_desc = '(DEV MODE)';
+        }
+        
+        mysqli_query($mysqli, "INSERT INTO logs SET log_type = 'Payment', log_action = 'Processing', log_description = 'ACH payment of $pi_currency $pi_amount_paid against invoice $invoice_prefix$invoice_number is processing - $pi_id $extended_log_desc', log_ip = '$ip', log_user_agent = '$user_agent', log_client_id = $pi_client_id");
+        
+        // Add a history note to the invoice
+        mysqli_query($mysqli, "INSERT INTO history SET history_status = 'Processing', history_description = 'ACH Payment processing - $ip - $os - $browser', history_invoice_id = $pi_invoice_id");
+        
+        // Notify admin about processing payment
+        appNotify("Invoice Payment Processing", "ACH payment for Invoice $invoice_prefix$invoice_number from client ID $pi_client_id is processing - $ip - $os - $browser", "invoice.php?invoice_id=$pi_invoice_id", $pi_client_id);
+        
+        require_once 'guest_footer.php';
+        exit();
     } elseif ($pi_obj->amount !== $pi_obj->amount_received) {
         // The invoice wasn't paid in full
         // this should be flagged for manual review as would indicate something weird happening

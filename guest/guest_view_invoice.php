@@ -159,7 +159,7 @@ if ($balance > 0) {
                         <a class="btn btn-default" href="#" onclick="window.print();"><i class="fas fa-fw fa-print mr-2"></i>Print</a>
                         <a class="btn btn-default" href="#" onclick="pdfMake.createPdf(docDefinition).download('<?php echo strtoAZaz09(html_entity_decode("$invoice_date-$company_name-Invoice-$invoice_prefix$invoice_number")); ?>');"><i class="fa fa-fw fa-download mr-2"></i>Download</a>
                         <?php
-                        if ($invoice_status !== "Paid" && $invoice_status  !== "Cancelled" && $invoice_status !== "Draft" && $config_stripe_enable == 1) { ?>
+                        if ($invoice_status !== "Paid" && $invoice_status !== "Cancelled" && $invoice_status !== "Draft" && $invoice_status !== "Processing" && $config_stripe_enable == 1) { ?>
                             <a class="btn btn-success" href="guest_pay_invoice_stripe.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $url_key; ?>"><i class="fa fa-fw fa-credit-card mr-2"></i>Pay Now </a>
                         <?php } ?>
                     </div>
@@ -182,6 +182,13 @@ if ($balance > 0) {
                     <?php if ($invoice_status == "Cancelled") { ?>
                         <div class="ribbon-wrapper">
                             <div class="ribbon bg-danger">
+                                <?php echo $invoice_status; ?>
+                            </div>
+                        </div>
+                    <?php } ?>
+                    <?php if ($invoice_status == "Processing") { ?>
+                        <div class="ribbon-wrapper">
+                            <div class="ribbon bg-warning">
                                 <?php echo $invoice_status; ?>
                             </div>
                         </div>
@@ -353,7 +360,11 @@ if ($balance > 0) {
                 author: <?php echo json_encode(html_entity_decode($company_name)) ?>
             },
 
-            //watermark: {text: '<?php echo $invoice_status; ?>', color: 'lightgrey', opacity: 0.3, bold: true, italics: false},
+            <?php if ($invoice_status == "Processing") { ?>
+            watermark: {text: 'PROCESSING', color: 'orange', opacity: 0.3, bold: true, italics: false},
+            <?php } else if ($invoice_status == "Paid" || $invoice_status == "Cancelled") { ?>
+            watermark: {text: '<?php echo $invoice_status; ?>', color: 'lightgrey', opacity: 0.3, bold: true, italics: false},
+            <?php } ?>
 
             content: [
                 // Header
@@ -381,6 +392,13 @@ if ($balance > 0) {
                             {
                                 text: 'PAID',
                                 style: 'invoicePaid',
+                                width: '*'
+                            },
+                            <?php } ?>
+                            <?php if ($invoice_status == "Processing") { ?>
+                            {
+                                text: 'PROCESSING',
+                                style: 'invoiceProcessing',
                                 width: '*'
                             },
                             <?php } ?>
@@ -680,6 +698,14 @@ if ($balance > 0) {
                     margin: [0,5,0,0],
                     alignment: 'right',
                     color: 'green'
+                },
+                // Invoice Processing
+                invoiceProcessing: {
+                    fontSize: 13,
+                    bold: true,
+                    margin: [0,5,0,0],
+                    alignment: 'right',
+                    color: 'orange'
                 },
                 // Billing Headers
                 invoiceBillingTitle: {
