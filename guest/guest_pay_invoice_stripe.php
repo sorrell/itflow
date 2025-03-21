@@ -220,7 +220,7 @@ if (isset($_GET['invoice_id'], $_GET['url_key']) && !isset($_GET['payment_intent
         if (!$pi_livemode) {
             $extended_log_desc = '(DEV MODE)';
         }
-        mysqli_query($mysqli, "UPDATE invoices SET invoice_status = 'Processing' WHERE invoice_id = $invoice_id");
+        mysqli_query($mysqli, "UPDATE invoices SET invoice_status = 'Processing' WHERE invoice_id = $pi_invoice_id");
 
         mysqli_query($mysqli, "INSERT INTO logs SET log_type = 'Payment', log_action = 'Processing', log_description = 'ACH payment of $pi_currency $pi_amount_paid against invoice $invoice_prefix$invoice_number is processing - $pi_id $extended_log_desc', log_ip = '$ip', log_user_agent = '$user_agent', log_client_id = $pi_client_id");
         
