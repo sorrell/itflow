@@ -42,6 +42,17 @@ require_once "includes/inc_all_admin.php";
                     </div>
 
                     <div class="form-group">
+                        <label>Webhook Secret <strong class="text-danger">*</strong></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-fw fa-lock"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="config_stripe_webhook_secret" placeholder="Stripe Webhook Secret (whsec_...)" value="<?php echo nullable_htmlentities($config_stripe_webhook_secret); ?>">
+                        </div>
+                        <small class="form-text text-muted">Get this from your Stripe Dashboard → Developers → Webhooks → Endpoint details</small>
+                    </div>
+
+                    <div class="form-group">
                         <label>Account <strong class="text-danger">*</strong></label>
                         <div class="input-group">
                             <div class="input-group-prepend">
