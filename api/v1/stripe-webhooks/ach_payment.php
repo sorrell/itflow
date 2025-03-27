@@ -11,15 +11,19 @@
  */
 
 // Required configuration
-require_once 'db_connect.php'; // Database connection
-require_once '../plugins/stripe-php/init.php'; // Stripe PHP library
+require_once '../../../plugins/stripe-php/init.php'; // Stripe PHP library
+require_once __DIR__ . '../../../../functions.php';
+require_once __DIR__ . "../../../../config.php";
+
+// JSON header
+header('Content-Type: application/json');
+
+// POST data
+$payload = file_get_contents('php://input');
+$sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
 
 // Define constants
 define("WORDING_WEBHOOK_FAILED", "Webhook verification failed");
-
-// Capture the raw POST data
-$payload = @file_get_contents('php://input');
-$sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
 
 // Get Stripe configuration from database
 $stripe_vars = mysqli_fetch_array(mysqli_query($mysqli, "SELECT config_stripe_enable, config_stripe_secret, config_stripe_webhook_secret, config_stripe_account, config_stripe_expense_vendor, config_stripe_expense_category, config_stripe_percentage_fee, config_stripe_flat_fee FROM settings WHERE company_id = 1"));
@@ -256,11 +260,18 @@ try {
     $config_invoice_from_name = sanitizeInput($row['config_invoice_from_name']);
     $config_invoice_from_email = sanitizeInput($row['config_invoice_from_email']);
     $config_invoice_paid_notification_email = sanitizeInput($row['config_invoice_paid_notification_email']);
-    $config_base_url = sanitizeInput($row['config_base_url']);
+    $config_base_url = sanitizeInput($config_base_url);
 
     if (!empty($config_smtp_host) && !empty($contact_email)) {
+        $config_base_url = rtrim($config_base_url, '/'); // Remove trailing slashes
+        if (!preg_match('~^https?://~i', $config_base_url)) {
+            $config_base_url = 'https://' . $config_base_url;
+        }
+
+        $invoice_url = mysqli_real_escape_string($mysqli, "$config_base_url/guest/guest_view_invoice.php?invoice_id=$invoice_id&url_key=$invoice_url_key");
+
         $subject = "Payment Received - Invoice $invoice_prefix$invoice_number";
-        $body = "Hello $contact_name,<br><br>We have received your ACH payment for the amount of " . numfmt_format_currency($currency_format, $pi_amount_paid, $invoice_currency_code) . " for invoice <a href='https://$config_base_url/guest/guest_view_invoice.php?invoice_id=$invoice_id&url_key=$invoice_url_key'>$invoice_prefix$invoice_number</a>. Please keep this email as a receipt for your records.<br><br>Amount: " . numfmt_format_currency($currency_format, $pi_amount_paid, $invoice_currency_code) . "<br><br>Thank you for your business!<br><br><br>~<br>$company_name - Billing<br>$config_invoice_from_email<br>$company_phone";
+        $body = "Hello $contact_name,<br><br>We have received your ACH payment for the amount of " . numfmt_format_currency($currency_format, $pi_amount_paid, $invoice_currency_code) . " for invoice <a href='$invoice_url'>$invoice_prefix$invoice_number</a>. Please keep this email as a receipt for your records.<br><br>Amount: " . numfmt_format_currency($currency_format, $pi_amount_paid, $invoice_currency_code) . "<br><br>Thank you for your business!<br><br><br>~<br>$company_name - Billing<br>$config_invoice_from_email<br>$company_phone";
 
         $data = [
             [
@@ -276,7 +287,7 @@ try {
         // Email the internal notification address too
         if (!empty($config_invoice_paid_notification_email)) {
             $subject = "ACH Payment Received - $client_name - Invoice $invoice_prefix$invoice_number";
-            $body = "Hello, <br><br>This is a notification that an invoice has been paid via ACH in ITFlow. Below is a copy of the receipt sent to the client:-<br><br>--------<br><br>Hello $contact_name,<br><br>We have received your ACH payment for the amount of " . numfmt_format_currency($currency_format, $pi_amount_paid, $invoice_currency_code) . " for invoice <a href='https://$config_base_url/guest/guest_view_invoice.php?invoice_id=$invoice_id&url_key=$invoice_url_key'>$invoice_prefix$invoice_number</a>. Please keep this email as a receipt for your records.<br><br>Amount: " . numfmt_format_currency($currency_format, $pi_amount_paid, $invoice_currency_code) . "<br><br>Thank you for your business!<br><br><br>~<br>$company_name - Billing<br>$config_invoice_from_email<br>$company_phone";
+            $body = "Hello, <br><br>This is a notification that an invoice has been paid via ACH in ITFlow. Below is a copy of the receipt sent to the client:-<br><br>--------<br><br>Hello $contact_name,<br><br>We have received your ACH payment for the amount of " . numfmt_format_currency($currency_format, $pi_amount_paid, $invoice_currency_code) . " for invoice <a href='$invoice_url'>$invoice_prefix$invoice_number</a>. Please keep this email as a receipt for your records.<br><br>Amount: " . numfmt_format_currency($currency_format, $pi_amount_paid, $invoice_currency_code) . "<br><br>Thank you for your business!<br><br><br>~<br>$company_name - Billing<br>$config_invoice_from_email<br>$company_phone";
 
             $data[] = [
                 'from' => $config_invoice_from_email,

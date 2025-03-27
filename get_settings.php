@@ -92,6 +92,7 @@ $config_invoice_overdue_reminders = intval($row['config_invoice_overdue_reminder
 $config_stripe_enable = intval($row['config_stripe_enable']);
 $config_stripe_publishable = $row['config_stripe_publishable'];
 $config_stripe_secret = $row['config_stripe_secret'];
+$config_stripe_webhook_secret = $row['config_stripe_webhook_secret'];
 $config_stripe_account = intval($row['config_stripe_account']);
 $config_stripe_expense_vendor = intval($row['config_stripe_expense_vendor']);
 $config_stripe_expense_category = intval($row['config_stripe_expense_category']);
