@@ -190,7 +190,10 @@ try {
         // Calculate gateway expense fee
         $gateway_fee = round($balance_to_pay * $config_stripe_percentage_fee + $config_stripe_flat_fee, 2);
 
-        // Add Expense
+        // For the expense description
+        $expense_description = mysqli_real_escape_string($mysqli, "Stripe ACH Transaction for Invoice $invoice_prefix$invoice_number In the Amount of $balance_to_pay");
+        $expense_reference = mysqli_real_escape_string($mysqli, "Stripe - $pi_id");
+
         mysqli_query($mysqli, "INSERT INTO expenses SET 
             expense_date = '$pi_date', 
             expense_amount = $gateway_fee, 
@@ -199,26 +202,31 @@ try {
             expense_vendor_id = $config_stripe_expense_vendor, 
             expense_client_id = $client_id, 
             expense_category_id = $config_stripe_expense_category, 
-            expense_description = 'Stripe ACH Transaction for Invoice $invoice_prefix$invoice_number In the Amount of $balance_to_pay', 
-            expense_reference = 'Stripe - $pi_id'");
+            expense_description = '$expense_description', 
+            expense_reference = '$expense_reference'");
     }
 
     // Update Invoice Status
     mysqli_query($mysqli, "UPDATE invoices SET invoice_status = 'Paid' WHERE invoice_id = $invoice_id");
 
-    // Add Payment to History
+    // For the payment reference
+    $payment_reference = mysqli_real_escape_string($mysqli, "Stripe - $pi_id");
+
     mysqli_query($mysqli, "INSERT INTO payments SET 
         payment_date = '$pi_date', 
         payment_amount = $pi_amount_paid, 
         payment_currency_code = '$pi_currency', 
         payment_account_id = $config_stripe_account, 
         payment_method = 'Stripe ACH', 
-        payment_reference = 'Stripe - $pi_id', 
+        payment_reference = '$payment_reference', 
         payment_invoice_id = $invoice_id");
     
+    // For the history description
+    $history_description = mysqli_real_escape_string($mysqli, "ACH Payment processed - Webhook - $ip - $os - $browser");
+
     mysqli_query($mysqli, "INSERT INTO history SET 
         history_status = 'Paid', 
-        history_description = 'ACH Payment processed - Webhook - $ip - $os - $browser', 
+        history_description = '$history_description', 
         history_invoice_id = $invoice_id");
 
     // Notify system
@@ -237,10 +245,13 @@ try {
         $extended_log_desc = '(DEV MODE)';
     }
 
+    // For the logs
+    $log_description = mysqli_real_escape_string($mysqli, "Stripe ACH payment of $pi_currency $pi_amount_paid against invoice $invoice_prefix$invoice_number - $pi_id $extended_log_desc");
+
     mysqli_query($mysqli, "INSERT INTO logs SET 
         log_type = 'Payment', 
         log_action = 'Create', 
-        log_description = 'Stripe ACH payment of $pi_currency $pi_amount_paid against invoice $invoice_prefix$invoice_number - $pi_id $extended_log_desc', 
+        log_description = '$log_description', 
         log_ip = '$ip', 
         log_user_agent = '$user_agent', 
         log_client_id = $pi_client_id");
@@ -303,10 +314,11 @@ try {
         if (function_exists('addToMailQueue')) {
             $mail = addToMailQueue($data);
             
-            // Email logging
+            // Email logging - Fix the SQL syntax by escaping the description
+            $history_description = mysqli_real_escape_string($mysqli, 'Emailed ACH Payment Receipt!');
             mysqli_query($mysqli, "INSERT INTO history SET 
                 history_status = 'Sent', 
-                history_description = 'Emailed ACH Payment Receipt!', 
+                history_description = '$history_description', 
                 history_invoice_id = $invoice_id");
         } else {
             // Simple fallback if mail queue function not available
