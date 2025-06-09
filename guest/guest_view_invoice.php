@@ -1,10 +1,10 @@
 <?php
 
-require_once "guest_header.php";
+require_once "includes/guest_header.php";
 
 if (!isset($_GET['invoice_id'], $_GET['url_key'])) {
     echo "<br><h2>Oops, something went wrong! Please raise a ticket if you believe this is an error.</h2>";
-    require_once "guest_footer.php";
+    require_once "includes/guest_footer.php";
 
     exit();
 }
@@ -25,7 +25,7 @@ $sql = mysqli_query(
 if (mysqli_num_rows($sql) !== 1) {
     // Invalid invoice/key
     echo "<br><h2>Oops, something went wrong! Please raise a ticket if you believe this is an error.</h2>";
-    require_once "guest_footer.php";
+    require_once "includes/guest_footer.php";
 
     exit();
 }
@@ -42,6 +42,7 @@ $invoice_discount = floatval($row['invoice_discount_amount']);
 $invoice_amount = floatval($row['invoice_amount']);
 $invoice_currency_code = nullable_htmlentities($row['invoice_currency_code']);
 $invoice_note = nullable_htmlentities($row['invoice_note']);
+$invoice_payment_link = nullable_htmlentities($row['invoice_payment_link']);
 $invoice_category_id = intval($row['invoice_category_id']);
 $client_id = intval($row['client_id']);
 $client_name = nullable_htmlentities($row['client_name']);
@@ -51,9 +52,11 @@ $location_city = nullable_htmlentities($row['location_city']);
 $location_state = nullable_htmlentities($row['location_state']);
 $location_zip = nullable_htmlentities($row['location_zip']);
 $contact_email = nullable_htmlentities($row['contact_email']);
-$contact_phone = formatPhoneNumber($row['contact_phone']);
+$contact_phone_country_code = nullable_htmlentities($row['contact_phone_country_code']);
+$contact_phone = nullable_htmlentities(formatPhoneNumber($row['contact_phone'], $contact_phone_country_code));
 $contact_extension = nullable_htmlentities($row['contact_extension']);
-$contact_mobile = formatPhoneNumber($row['contact_mobile']);
+$contact_mobile_country_code = nullable_htmlentities($row['contact_mobile_country_code']);
+$contact_mobile = nullable_htmlentities(formatPhoneNumber($row['contact_mobile'], $contact_mobile_country_code));
 $client_website = nullable_htmlentities($row['client_website']);
 $client_currency_code = nullable_htmlentities($row['client_currency_code']);
 $client_net_terms = intval($row['client_net_terms']);
@@ -69,7 +72,8 @@ $company_address = nullable_htmlentities($row['company_address']);
 $company_city = nullable_htmlentities($row['company_city']);
 $company_state = nullable_htmlentities($row['company_state']);
 $company_zip = nullable_htmlentities($row['company_zip']);
-$company_phone = formatPhoneNumber($row['company_phone']);
+$company_phone_country_code = nullable_htmlentities($row['company_phone_country_code']);
+$company_phone = nullable_htmlentities(formatPhoneNumber($row['company_phone'], $company_phone_country_code));
 $company_email = nullable_htmlentities($row['company_email']);
 $company_website = nullable_htmlentities($row['company_website']);
 $company_logo = nullable_htmlentities($row['company_logo']);
@@ -159,8 +163,16 @@ if ($balance > 0) {
                         <a class="btn btn-default" href="#" onclick="window.print();"><i class="fas fa-fw fa-print mr-2"></i>Print</a>
                         <a class="btn btn-default" href="#" onclick="pdfMake.createPdf(docDefinition).download('<?php echo strtoAZaz09(html_entity_decode("$invoice_date-$company_name-Invoice-$invoice_prefix$invoice_number")); ?>');"><i class="fa fa-fw fa-download mr-2"></i>Download</a>
                         <?php
+<<<<<<< HEAD
                         if ($invoice_status !== "Paid" && $invoice_status !== "Cancelled" && $invoice_status !== "Draft" && $invoice_status !== "Processing" && $config_stripe_enable == 1) { ?>
                             <a class="btn btn-success" href="guest_pay_invoice_stripe.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $url_key; ?>"><i class="fa fa-fw fa-credit-card mr-2"></i>Pay Now </a>
+||||||| ff80a3db
+                        if ($invoice_status !== "Paid" && $invoice_status  !== "Cancelled" && $invoice_status !== "Draft" && $config_stripe_enable == 1) { ?>
+                            <a class="btn btn-success" href="guest_pay_invoice_stripe.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $url_key; ?>"><i class="fa fa-fw fa-credit-card mr-2"></i>Pay Now </a>
+=======
+                        if ($invoice_status !== "Paid" && $invoice_status  !== "Cancelled" && $invoice_status !== "Draft" && !empty($invoice_payment_link)) { ?>
+                            <a class="btn btn-success" href="<?php echo $invoice_payment_link; ?>" target="_blank"><i class="fa fa-fw fa-credit-card mr-2"></i>Pay Now</a>
+>>>>>>> docker
                         <?php } ?>
                     </div>
                 </div>
@@ -295,6 +307,22 @@ if ($balance > 0) {
                         <div class="card">
                             <div class="card-body">
                                 <?php echo nl2br($invoice_note); ?>
+                            </div>
+                        </div>
+                    <?php } ?>
+                    
+                    <?php if (!empty($invoice_payment_link)) { ?>
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0"><i class="fas fa-credit-card mr-2"></i>Payment Options</h6>
+                            </div>
+                            <div class="card-body">
+                                <a href="<?php echo $invoice_payment_link; ?>" target="_blank" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-credit-card mr-2"></i>Pay This Invoice
+                                </a>
+                                <div class="mt-2">
+                                    <small class="text-muted">Click the button above to make a secure payment</small>
+                                </div>
                             </div>
                         </div>
                     <?php } ?>
@@ -957,4 +985,4 @@ if ($outstanding_invoices_count > 0) { ?>
 
 <?php } // End previous unpaid invoices
 
-require_once "guest_footer.php";
+require_once "includes/guest_footer.php";

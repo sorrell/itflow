@@ -44,6 +44,7 @@ if (isset($_GET['invoice_id'])) {
     $invoice_discount = floatval($row['invoice_discount_amount']);
     $invoice_currency_code = nullable_htmlentities($row['invoice_currency_code']);
     $invoice_note = nullable_htmlentities($row['invoice_note']);
+    $invoice_payment_link = nullable_htmlentities($row['invoice_payment_link']);
     $invoice_url_key = nullable_htmlentities($row['invoice_url_key']);
     $invoice_created_at = nullable_htmlentities($row['invoice_created_at']);
     $category_id = intval($row['invoice_category_id']);
@@ -54,9 +55,11 @@ if (isset($_GET['invoice_id'])) {
     $location_state = nullable_htmlentities($row['location_state']);
     $location_zip = nullable_htmlentities($row['location_zip']);
     $contact_email = nullable_htmlentities($row['contact_email']);
-    $contact_phone = formatPhoneNumber($row['contact_phone']);
+    $contact_phone_country_code = nullable_htmlentities($row['contact_phone_country_code']);
+    $contact_phone = nullable_htmlentities(formatPhoneNumber($row['contact_phone'], $contact_phone_country_code));
     $contact_extension = nullable_htmlentities($row['contact_extension']);
-    $contact_mobile = formatPhoneNumber($row['contact_mobile']);
+    $contact_mobile_country_code = nullable_htmlentities($row['contact_mobile_country_code']);
+    $contact_mobile = nullable_htmlentities(formatPhoneNumber($row['contact_mobile'], $contact_mobile_country_code));
     $client_website = nullable_htmlentities($row['client_website']);
     $client_currency_code = nullable_htmlentities($row['client_currency_code']);
     $client_net_terms = intval($row['client_net_terms']);
@@ -77,7 +80,8 @@ if (isset($_GET['invoice_id'])) {
     $company_city = nullable_htmlentities($row['company_city']);
     $company_state = nullable_htmlentities($row['company_state']);
     $company_zip = nullable_htmlentities($row['company_zip']);
-    $company_phone = formatPhoneNumber($row['company_phone']);
+    $company_phone_country_code = nullable_htmlentities($row['company_phone_country_code']);
+    $company_phone = nullable_htmlentities(formatPhoneNumber($row['company_phone'], $company_phone_country_code));
     $company_email = nullable_htmlentities($row['company_email']);
     $company_website = nullable_htmlentities($row['company_website']);
     $company_logo = nullable_htmlentities($row['company_logo']);
@@ -468,6 +472,29 @@ if (isset($_GET['invoice_id'])) {
                             <?php echo nl2br($invoice_note); ?>
                         </div>
                     </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header text-bold">
+                            Remittance
+                            <div class="card-tools d-print-none">
+                                <a href="#" class="btn btn-light btn-tool" data-toggle="modal" data-target="#invoicePaymentLinkModal">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <?php if (!empty($invoice_payment_link)) { ?>
+                                <a href="<?php echo $invoice_payment_link; ?>" target="_blank" class="btn btn-primary">
+                                    <i class="fas fa-credit-card mr-2"></i>Pay Invoice
+                                </a>
+                                <div class="mt-2">
+                                    <small class="text-muted"><?php echo $invoice_payment_link; ?></small>
+                                </div>
+                            <?php } else { ?>
+                                <p class="text-muted">No payment link configured</p>
+                            <?php } ?>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-sm-3 offset-sm-2">
                     <table class="table table-borderless">
@@ -680,6 +707,7 @@ if (isset($_GET['invoice_id'])) {
     include_once "modals/invoice_payment_add_modal.php";
     include_once "modals/invoice_recurring_add_modal.php";
     include_once "modals/invoice_note_modal.php";
+    include_once "modals/invoice_payment_link_modal.php";
 
 }
 

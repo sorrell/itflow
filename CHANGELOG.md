@@ -2,6 +2,95 @@
 
 This file documents all notable changes made to ITFlow.
 
+## [25.03.4]
+
+### Fixed
+- Ability to remove additional assets from the ticket details screen.
+- Fix the ability to remove assets from edit ticket not working when only 1 asset exists.
+- Fix Database Backup corruption.
+- Client Portal - show ticket number instead of ticket id in ticket listing.
+- Add Purchase Reference to copy asset.
+- Add Link to asset details from the global search.
+- Fix Bulk assign ticket only showing contacts instead of ITFlow users.
+
+
+## [25.03.3]
+
+### Fixed
+- Fix adding ITFlow user.
+- Do not alert on inactive recurring invoices.
+- Fix ticket user assignment including bulk assignment.
+- Fix adding a location phone extension.
+- Do not default to +1 Country code, instead default to null.
+- Do not format numbers unless a country code is entered.
+- Fix editing network location.
+- Fix ticket redaction on client replies.
+- Remove more from user activity as it requires admin privledges.
+- Fix MFA Enforcement page.
+
+## [25.03.2]
+
+### Fixed
+- Revert DB.sql change
+
+## [25.03.1]
+
+### Fixed
+- Phone number missing in various sections.
+- Match Database.
+- Client Export Only display licenses users and assets from the selected client only.
+
+## [25.03]
+
+### Fixed
+- Resolved missing attachments in ticket replies processed via the email parser.
+- Fixed issue where the top half of portrait image uploads appeared cut off at the bottom.
+- Ensured all tables and fields use `CHARACTER SET utf8mb4` and `COLLATE utf8mb4_general_ci` for updates and new installations.
+- Converted `service_domains` table to use InnoDB instead of MyISAM.
+- Fixed the initials function to properly handle UTF-8 characters, preventing contact-related issues.
+- Interfaces can now start with `0`.
+- Adjusted AI prompt handling to focus solely on content, avoiding unnecessary additions.
+
+### Added / Changed
+- Introduced bulk delete functionality for assets.
+- Added the ability to redact ticket replies after a ticket is closed.
+- Added support for redacting specific text while a ticket is open.
+- Switched file upload hashing from SHA256 to MD5 to significantly improve performance.
+- Enabled assigning multiple assets to a single ticket.
+- Updated all many-to-many tables to support cascading deletes using foreign key associations, improving efficiency, performance, and data integrity.
+- Enabled caching for AJAX modals to reduce repeated reloads and enhance browser performance.
+- Upgraded DataTables from 2.2.1 to 2.2.2.
+- Upgraded TinyMCE from 7.6.1 to 7.7.1, providing a significant performance boost.
+- Added “Copy Credentials to Clipboard” button in AJAX asset and contact views.
+- Renamed and reorganized several tables.
+- Improved theme color organization by grouping primary colors and their related shades.
+- Displayed a user icon next to contacts who have user accounts.
+- New image uploads are now converted to optimized `.webp` format by default; original files are no longer saved. Existing images remain unchanged.
+- Added international phone number support throughout the system.
+- Introduced user signatures in preferences, which are now appended to all ticket replies.
+- Optimized search filters to only display defined tags.
+- Added “Projects” to the client-side navigation.
+- Enabled “Create New Ticket” from within project details.
+- Reintroduced batch payment functionality in client invoices.
+- Included client abbreviations in both client and global search options.
+- Added assigned software license details (User/Asset) to the client PDF export.
+- Replaced client-side `pdfMake` with the PHP-based `TCPDF` library for generating client export runbooks.
+- Introduced the ability to download documents as PDFs.
+- Added a “Reference” field to tickets and invoices generated from recurring templates (not yet in active use).
+
+### Breaking Changes
+> **Important:** To update to this version, you **must** run the following commands from the command line from the scripts directory:
+>
+> ```bash
+> php update_cli.php
+> php update_cli.php --db_update
+> ```
+>
+> Repeat `--db_update` until no further updates are found.
+>
+> **Back up your system before upgrading.**  
+> This version includes numerous backend changes critical for future development.
+
 ## [25.02.4]
 
 ### Fixed
