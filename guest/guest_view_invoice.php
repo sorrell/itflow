@@ -42,6 +42,7 @@ $invoice_discount = floatval($row['invoice_discount_amount']);
 $invoice_amount = floatval($row['invoice_amount']);
 $invoice_currency_code = nullable_htmlentities($row['invoice_currency_code']);
 $invoice_note = nullable_htmlentities($row['invoice_note']);
+$invoice_payment_link = nullable_htmlentities($row['invoice_payment_link']);
 $invoice_category_id = intval($row['invoice_category_id']);
 $client_id = intval($row['client_id']);
 $client_name = nullable_htmlentities($row['client_name']);
@@ -162,8 +163,8 @@ if ($balance > 0) {
                         <a class="btn btn-default" href="#" onclick="window.print();"><i class="fas fa-fw fa-print mr-2"></i>Print</a>
                         <a class="btn btn-default" href="#" onclick="pdfMake.createPdf(docDefinition).download('<?php echo strtoAZaz09(html_entity_decode("$invoice_date-$company_name-Invoice-$invoice_prefix$invoice_number")); ?>');"><i class="fa fa-fw fa-download mr-2"></i>Download</a>
                         <?php
-                        if ($invoice_status !== "Paid" && $invoice_status  !== "Cancelled" && $invoice_status !== "Draft" && $config_stripe_enable == 1) { ?>
-                            <a class="btn btn-success" href="guest_pay_invoice_stripe.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $url_key; ?>"><i class="fa fa-fw fa-credit-card mr-2"></i>Pay Now </a>
+                        if ($invoice_status !== "Paid" && $invoice_status  !== "Cancelled" && $invoice_status !== "Draft" && !empty($invoice_payment_link)) { ?>
+                            <a class="btn btn-success" href="<?php echo $invoice_payment_link; ?>" target="_blank"><i class="fa fa-fw fa-credit-card mr-2"></i>Pay Now</a>
                         <?php } ?>
                     </div>
                 </div>
@@ -291,6 +292,22 @@ if ($balance > 0) {
                         <div class="card">
                             <div class="card-body">
                                 <?php echo nl2br($invoice_note); ?>
+                            </div>
+                        </div>
+                    <?php } ?>
+                    
+                    <?php if (!empty($invoice_payment_link)) { ?>
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0"><i class="fas fa-credit-card mr-2"></i>Payment Options</h6>
+                            </div>
+                            <div class="card-body">
+                                <a href="<?php echo $invoice_payment_link; ?>" target="_blank" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-credit-card mr-2"></i>Pay This Invoice
+                                </a>
+                                <div class="mt-2">
+                                    <small class="text-muted">Click the button above to make a secure payment</small>
+                                </div>
                             </div>
                         </div>
                     <?php } ?>
