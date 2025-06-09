@@ -161,18 +161,10 @@ if ($balance > 0) {
                 <div class="col-6">
                     <div class="float-right">
                         <a class="btn btn-default" href="#" onclick="window.print();"><i class="fas fa-fw fa-print mr-2"></i>Print</a>
-                        <a class="btn btn-default" href="#" onclick="pdfMake.createPdf(docDefinition).download('<?php echo strtoAZaz09(html_entity_decode("$invoice_date-$company_name-Invoice-$invoice_prefix$invoice_number")); ?>');"><i class="fa fa-fw fa-download mr-2"></i>Download</a>
+                        <a class="btn btn-default" href="#" onclick="pdfMake.createPdf(docDefinition).download('<?php echo strtoAZaz09(html_entity_decode($invoice_date . "-" . $company_name . "-Invoice-" . $invoice_prefix . $invoice_number)); ?>');"><i class="fa fa-fw fa-download mr-2"></i>Download</a>
                         <?php
-<<<<<<< HEAD
-                        if ($invoice_status !== "Paid" && $invoice_status !== "Cancelled" && $invoice_status !== "Draft" && $invoice_status !== "Processing" && $config_stripe_enable == 1) { ?>
-                            <a class="btn btn-success" href="guest_pay_invoice_stripe.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $url_key; ?>"><i class="fa fa-fw fa-credit-card mr-2"></i>Pay Now </a>
-||||||| ff80a3db
-                        if ($invoice_status !== "Paid" && $invoice_status  !== "Cancelled" && $invoice_status !== "Draft" && $config_stripe_enable == 1) { ?>
-                            <a class="btn btn-success" href="guest_pay_invoice_stripe.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $url_key; ?>"><i class="fa fa-fw fa-credit-card mr-2"></i>Pay Now </a>
-=======
                         if ($invoice_status !== "Paid" && $invoice_status  !== "Cancelled" && $invoice_status !== "Draft" && !empty($invoice_payment_link)) { ?>
                             <a class="btn btn-success" href="<?php echo $invoice_payment_link; ?>" target="_blank"><i class="fa fa-fw fa-credit-card mr-2"></i>Pay Now</a>
->>>>>>> docker
                         <?php } ?>
                     </div>
                 </div>
@@ -205,7 +197,7 @@ if ($balance > 0) {
                             </div>
                         </div>
                     <?php } ?>
-                    <h3 class="text-right mt-5"><strong>Invoice</strong><br><small class="text-secondary"><?php echo "$invoice_prefix$invoice_number"; ?></small></h3>
+                    <h3 class="text-right mt-5"><strong>Invoice</strong><br><small class="text-secondary"><?php echo $invoice_prefix . $invoice_number; ?></small></h3>
                 </div>
             </div>
             <div class="row mb-4">
@@ -213,7 +205,7 @@ if ($balance > 0) {
                     <ul class="list-unstyled">
                         <li><h4><strong><?php echo $company_name; ?></strong></h4></li>
                         <li><?php echo $company_address; ?></li>
-                        <li><?php echo "$company_city $company_state $company_zip"; ?></li>
+                        <li><?php echo $company_city . " " . $company_state . " " . $company_zip; ?></li>
                         <li><?php echo $company_phone; ?></li>
                         <li><?php echo $company_email; ?></li>
                     </ul>
@@ -224,8 +216,8 @@ if ($balance > 0) {
                     <ul class="list-unstyled text-right">
                         <li><h4><strong><?php echo $client_name; ?></strong></h4></li>
                         <li><?php echo $location_address; ?></li>
-                        <li><?php echo "$location_city $location_state $location_zip"; ?></li>
-                        <li><?php echo "$contact_phone $contact_extension"; ?></li>
+                        <li><?php echo $location_city . " " . $location_state . " " . $location_zip; ?></li>
+                        <li><?php echo $contact_phone . " " . $contact_extension; ?></li>
                         <li><?php echo $contact_mobile; ?></li>
                         <li><?php echo $contact_email; ?></li>
                     </ul>
@@ -412,7 +404,7 @@ if ($balance > 0) {
                                 width: '*'
                             },
                             {
-                                text: <?php echo json_encode(html_entity_decode("$invoice_prefix$invoice_number")) ?>,
+                                text: <?php echo json_encode(html_entity_decode($invoice_prefix . $invoice_number)) ?>,
                                 style: 'invoiceNumber',
                                 width: '*'
                             },
@@ -450,11 +442,11 @@ if ($balance > 0) {
                 {
                     columns: [
                         {
-                            text: <?php echo json_encode(html_entity_decode("$company_address \n $company_city $company_state $company_zip \n $company_phone \n $company_website")) ?>,
+                            text: <?php echo json_encode(html_entity_decode($company_address . " \n " . $company_city . " " . $company_state . " " . $company_zip . " \n " . $company_phone . " \n " . $company_website)) ?>,
                             style: 'invoiceBillingAddress'
                         },
                         {
-                            text: <?php echo json_encode(html_entity_decode("$location_address \n $location_city $location_state $location_zip \n $contact_email \n $contact_phone")) ?>,
+                            text: <?php echo json_encode(html_entity_decode($location_address . " \n " . $location_city . " " . $location_state . " " . $location_zip . " \n " . $contact_email . " \n " . $contact_phone)) ?>,
                             style: 'invoiceBillingAddressClient'
                         },
                     ]
@@ -907,7 +899,7 @@ if ($current_invoices_count > 0) { ?>
                     ?>
 
                     <tr <?php if ($_GET['invoice_id'] == $invoice_id) { echo "class='table-primary'"; } ?>>
-                        <th class="text-center"><a href="guest_view_invoice.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $invoice_url_key; ?>"><?php echo "$invoice_prefix$invoice_number"; ?></a></th>
+                        <th class="text-center"><a href="guest_view_invoice.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $invoice_url_key; ?>"><?php echo $invoice_prefix . $invoice_number; ?></a></th>
                         <td><?php echo $invoice_date; ?></td>
                         <td><?php echo $invoice_due; ?> (Due in <?php echo $days; ?> Days)</td>
                         <td class="text-right text-bold"><?php echo numfmt_format_currency($currency_format, $invoice_amount, $invoice_currency_code); ?></td>
@@ -968,7 +960,7 @@ if ($outstanding_invoices_count > 0) { ?>
                     ?>
 
                     <tr <?php if ($_GET['invoice_id'] == $invoice_id) { echo "class='table-primary'"; } ?>>
-                        <th class="text-center"><a href="guest_view_invoice.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $invoice_url_key; ?>"><?php echo "$invoice_prefix$invoice_number"; ?></a></th>
+                        <th class="text-center"><a href="guest_view_invoice.php?invoice_id=<?php echo $invoice_id; ?>&url_key=<?php echo $invoice_url_key; ?>"><?php echo $invoice_prefix . $invoice_number; ?></a></th>
                         <td><?php echo $invoice_date; ?></td>
                         <td class="text-danger"><?php echo $invoice_due; ?> (Over Due by <?php echo $days; ?> Days)</td>
                         <td class="text-right text-bold"><?php echo numfmt_format_currency($currency_format, $invoice_amount, $invoice_currency_code); ?></td>
