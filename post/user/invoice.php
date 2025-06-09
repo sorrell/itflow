@@ -597,6 +597,28 @@ if (isset($_POST['invoice_note'])) {
 
 }
 
+if (isset($_POST['invoice_payment_link'])) {
+
+    $invoice_id = intval($_POST['invoice_id']);
+    $payment_link = sanitizeInput($_POST['payment_link']);
+
+    // Get Invoice Details for logging
+    $sql = mysqli_query($mysqli,"SELECT * FROM invoices WHERE invoice_id = $invoice_id");
+    $row = mysqli_fetch_array($sql);
+    $invoice_prefix = sanitizeInput($row['invoice_prefix']);
+    $invoice_number = intval($row['invoice_number']);
+    $client_id = intval($row['invoice_client_id']);
+
+    mysqli_query($mysqli,"UPDATE invoices SET invoice_payment_link = '$payment_link' WHERE invoice_id = $invoice_id");
+
+    logAction("Invoice", "Edit", "$session_name updated payment link for invoice $invoice_prefix$invoice_number", $client_id, $invoice_id);
+
+    $_SESSION['alert_message'] = "Payment link updated";
+
+    header("Location: " . $_SERVER["HTTP_REFERER"]);
+
+}
+
 if (isset($_POST['edit_item'])) {
 
     $item_id = intval($_POST['item_id']);

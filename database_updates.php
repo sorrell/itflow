@@ -3457,11 +3457,13 @@ if (LATEST_DATABASE_VERSION > CURRENT_DATABASE_VERSION) {
         mysqli_query($mysqli, "UPDATE `settings` SET `config_current_database_version` = '2.1.3'");
     }
 
-    // if (CURRENT_DATABASE_VERSION == '2.1.3') {
-    //     // Insert queries here required to update to DB version 2.1.4
-    //     // Then, update the database to the next sequential version
-    //     mysqli_query($mysqli, "UPDATE `settings` SET `config_current_database_version` = '2.1.4'");
-    // }
+    if (CURRENT_DATABASE_VERSION == '2.1.3') {
+        // Add payment_link field to invoices table
+        mysqli_query($mysqli, "ALTER TABLE `invoices` ADD COLUMN `invoice_payment_link` TEXT DEFAULT NULL AFTER `invoice_note`");
+        
+        // Update the database to the next sequential version
+        mysqli_query($mysqli, "UPDATE `settings` SET `config_current_database_version` = '2.1.4'");
+    }
 
 } else {
     // Up-to-date

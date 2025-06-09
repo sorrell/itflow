@@ -20,6 +20,8 @@ This directory contains Docker configuration for running ITFlow in a containeriz
 2. Start the ITFlow containers:
    ```
    docker-compose up -d
+   # OR
+   ❯ DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker compose up --build
    ```
 
 3. Access ITFlow at http://localhost:8088

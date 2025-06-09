@@ -44,6 +44,7 @@ if (isset($_GET['invoice_id'])) {
     $invoice_discount = floatval($row['invoice_discount_amount']);
     $invoice_currency_code = nullable_htmlentities($row['invoice_currency_code']);
     $invoice_note = nullable_htmlentities($row['invoice_note']);
+    $invoice_payment_link = nullable_htmlentities($row['invoice_payment_link']);
     $invoice_url_key = nullable_htmlentities($row['invoice_url_key']);
     $invoice_created_at = nullable_htmlentities($row['invoice_created_at']);
     $category_id = intval($row['invoice_category_id']);
@@ -471,6 +472,29 @@ if (isset($_GET['invoice_id'])) {
                             <?php echo nl2br($invoice_note); ?>
                         </div>
                     </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header text-bold">
+                            Remittance
+                            <div class="card-tools d-print-none">
+                                <a href="#" class="btn btn-light btn-tool" data-toggle="modal" data-target="#invoicePaymentLinkModal">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <?php if (!empty($invoice_payment_link)) { ?>
+                                <a href="<?php echo $invoice_payment_link; ?>" target="_blank" class="btn btn-primary">
+                                    <i class="fas fa-credit-card mr-2"></i>Pay Invoice
+                                </a>
+                                <div class="mt-2">
+                                    <small class="text-muted"><?php echo $invoice_payment_link; ?></small>
+                                </div>
+                            <?php } else { ?>
+                                <p class="text-muted">No payment link configured</p>
+                            <?php } ?>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-sm-3 offset-sm-2">
                     <table class="table table-borderless">
@@ -683,6 +707,7 @@ if (isset($_GET['invoice_id'])) {
     include_once "modals/invoice_payment_add_modal.php";
     include_once "modals/invoice_recurring_add_modal.php";
     include_once "modals/invoice_note_modal.php";
+    include_once "modals/invoice_payment_link_modal.php";
 
 }
 
